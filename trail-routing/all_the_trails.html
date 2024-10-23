@@ -1,0 +1,909 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>All Tracks Route Planner</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet/dist/leaflet.min.css" />
+  <style>
+      /* Create a flexbox container for the controls and map */
+      #container {
+          display: flex;
+          width: 100%;
+          gap: 20px; /* Space between the controls and map */
+      }
+
+      #map {
+          flex-grow: 1; /* Allow the map to grow and fill available space */
+          min-width: 400px; /* Set a minimum width for the map */
+          height: calc(100vh - 80px);
+          border-radius: 8px;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          padding: 20px; /* Add padding inside the map if needed */
+      }
+
+      #story {
+        gap: 20px;
+      }
+
+      #premap {
+          min-width: calc(100hw - 80px);
+          height: 400px;
+          border-radius: 8px;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          padding: 20px; /* Add padding inside the map if needed */
+      }
+
+      #controls {
+          display: flex;
+          flex-direction: column;
+          gap: 10px; /* Adds spacing between elements inside the controls */
+          padding: 20px; /* Add padding around the controls */
+          background-color: white; /* Optional: background color for visibility */
+          border-radius: 8px; /* Optional: rounded corners for the controls */
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: shadow for aesthetics */
+      }
+
+      body {
+          font-family: Arial, sans-serif;
+          margin: 20px;
+          background-color: #f4f4f9;
+      }
+
+      .form-group {
+          display: flex;
+          align-items: center;
+          margin-bottom: 15px;
+      }
+
+      .text {
+        font-family: "Georgia", "Times New Roman", Times, serif;  /* Beautiful serif fonts */
+        max-width: 600px;    /* Limit the line width for readability */
+        margin: 20px;
+        font-size: 1.2rem;   /* Slightly larger text for readability */
+        line-height: 1.6;    /* Good line spacing for readability */
+        padding: 0 20px;     /* Add some padding on mobile */
+
+        /* Ensure responsiveness on smaller screens */
+        @media (max-width: 768px) {
+          font-size: 1.1rem;  /* Slightly smaller font size on mobile */
+          padding: 0 15px;    /* Adjust padding */
+        }
+
+        @media (max-width: 480px) {
+          font-size: 1rem;    /* Even smaller font size on very small screens */
+          padding: 0 10px;    /* Further adjust padding */
+        }
+
+        /* Accessibility and better rendering */
+        text-rendering: optimizeLegibility;  /* Improves font rendering on most browsers */
+        -webkit-font-smoothing: antialiased; /* For smoother text on macOS */
+        -moz-osx-font-smoothing: grayscale;
+
+      }
+
+      label {
+          font-size: 16px;
+          margin-right: 10px;
+      }
+
+      input[type="number"] {
+          padding: 5px;
+          font-size: 16px;
+          border-radius: 4px;
+          border: 1px solid #ccc;
+          width: 100px;
+          margin-right: 10px;
+      }
+
+      button {
+          background-color: #007bff;
+          color: white;
+          border: none;
+          padding: 8px 12px;
+          border-radius: 4px;
+          font-size: 16px;
+          cursor: pointer;
+          margin: 10px;
+      }
+
+      button:hover {
+          background-color: #0056b3;
+      }
+
+      span {
+          font-size: 16px;
+      }
+
+      #progressBarContainer {
+        width: 100%;
+        background-color: #f3f3f3;
+      }
+      #progressBar {
+        width: 0%;
+        height: 5px;
+        background-color: #4caf50;
+      }
+
+      .stats-container {
+        display: flex;                    /* Use flexbox for layout */
+        justify-content: center;          /* Center items horizontally */
+        margin-bottom: 20px;             /* Space below the stats */
+      }
+
+      .stat {
+        text-align: center;               /* Center text in each stat */
+        margin: 0 15px;                  /* Space between stats */
+      }
+
+      .stat-value {
+        font-size: 3rem;                 /* Large font for value */
+        font-weight: bold;                /* Bold weight for emphasis */
+        color: #007BFF;                  /* Blue color for the value */
+      }
+
+      .stat-label {
+        font-size: 1.2rem;               /* Smaller font for label */
+        color: #555;                     /* Dark grey for the label */
+      }
+      .course-container {
+        display: flex;                     /* Flexbox for better alignment */
+        align-items: flex-end;               /* Center the link with the big numbers */
+        margin-left: 30px;                /* Space between stats and link */
+      }
+
+      .course-link {
+        font-size: 1.5rem;                /* Larger font size for visibility */
+        color: #007BFF;                   /* Match the stat color for consistency */
+        text-decoration: none;             /* Remove underline */
+        padding: 5px 10px;                /* Add some padding */
+        transition: color 0.3s;           /* Smooth color transition on hover */
+      }
+
+      .course-link:hover {
+        color: #0056b3;                   /* Darker blue on hover */
+      }
+  </style>
+</head>
+<body>
+  <div id="story">
+    <h1>Running all of Mission Trails Regional Park</h1>
+    <small><i>22 October 2024</i></small>
+    <div id="premap"></div>
+    <div class="stats-container">
+      <div class="stat">
+        <span class="stat-value">88</span>
+        <span class="stat-label">miles</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">19,844</span>
+        <span class="stat-label">ft of elevation gain</span>
+      </div>
+      <div class="course-container">
+        <a href="https://connect.garmin.com/modern/course/315563049" class="course-link">View on Garmin Connect</a>
+      </div>
+    </div>
+    <div class="text">
+<p>The ultra racing calendar for 2024 was a bit disappointing.  First, the race I had trained for and looked forward to all year&mdash;the <a href="https://www.ultratourmonterosa.com">Ultra Tour Monte Rosa</a>&mdash;was canceled with only a day's notice due to bad weather and devastating mud slides.  Dave and I made the best of the situation by soaking in Zermatt's surroundings with some highly scenic runs at a more leisurely pace, but I wanted to jump into another 100.  I set my sights on the Kodiak 100, closer to home, but nature had other plans. The stubborn <a href="https://www.fire.ca.gov/incidents/2024/9/5/line-fire">Line Fire</a> burned through over 40,000 acres of the San Bernardino National Forest, forcing the race director to alter the course into an unrecognizable shadow of itself.  I decided to pass.</p>
+
+<p>Sometimes, disappointment breeds inspiration. As I climbed up Cowles Mountain one morning in October, an idea took root: What if, instead of racing someone else's course, I created my own challenge?  Something even closer to home.  What if I ran every single trail in Mission Trails Regional Park?</p>
+
+<p>The idea is simple. But creating a route that covers every trail in the park's network proved to be a puzzle that exceeded my patience for manual course creation in Garmin Connect or Gaia.  That's when I realized this was more than a running challenge—it was an opportunity to write some code.</p>
+
+<p>Starting with an Overpass query to fetch all trails and paths within the park boundary (constrained to official trails and paths only), I could transform this task into a classic computer science problem: the <a href="https://en.wikipedia.org/wiki/Eulerian_path">Chinese Postman Problem</a>. First described by Chinese mathematician Mei-Ko Kwan in 1962, this problem seeks to find the shortest possible route that covers every edge (in this case, trail) in a graph, potentially revisiting some sections when necessary.</p>
+
+<p>It's a problem that resonates with anyone who's ever wondered about efficiency in navigation—whether you're a mail carrier plotting your route, a street sweeper covering an entire city, or a stir crazy runner during the pandemic, like Ricky Gates, who wanted to <a href="https://www.everysinglestreet.com/why">run every street</a> in their city (though in their case not all at once).</p>
+
+<p>I created this page because the approach is versatile and the code could be handy whether you're a runner wanting to create a course that covers every street in your neighborhood, a hiker wanting to explore every trail in a national park, or a cyclist trying to cover every bike path in your city. Try it out below!  The Overpass query is set to the one I created for Mission Trails, but you can write your own to suit your own adventure.</p>
+
+<p>Also, check out the code on <a href="https://github.com/loukad/loukad.github.io/tree/master/trail-routing">Github</a>.</p>
+    </div>
+  </div>
+  <div id="container">
+  <div id="controls">
+    Overpass query:
+    <textarea id="overpassQuery" placeholder="Enter Overpass API query for tracks" rows="10" style="width:500px;">
+[out:json];
+area[name="Mission Trails Regional Park"]->.park;
+(
+  way["highway"="path"]["access"!="private"]["access"!="no"](area.park)(32.798136,-117.088140,32.858431,-117.001279);
+  way["highway"="steps"]["access"!="private"]["access"!="no"](area.park)(32.798136,-117.088140,32.858431,-117.001279);
+  way["highway"="footway"]["access"!="private"]["access"!="no"](area.park)(32.798136,-117.088140,32.858431,-117.001279);
+  way["highway"="track"]["access"!="private"]["access"!="no"](area.park)(32.798136,-117.088140,32.858431,-117.001279);
+  way["highway"="unclassified"]["access"!="private"]["access"!="no"](area.park)(32.798136,-117.088140,32.858431,-117.001279);
+  way["highway"="service"]["service"!="driveway"]["access"!="private"]["access"!="no"](area.park)(32.798136,-117.088140,32.858431,-117.001279);
+  way["surface"="dirt"]["access"!="private"]["access"!="no"](area.park)(32.798136,-117.088140,32.858431,-117.001279);
+  way["surface"="unpaved"]["access"!="private"]["access"!="no"](area.park)(32.798136,-117.088140,32.858431,-117.001279);
+
+  // Link up the South and North parts of the park
+  way(id:623901092,38652618,1280072089,436415450,436415438,436415439,436415440,436413652,436413651);
+
+  // Add mesa road and the surroundings
+  way(id:213555287,80396877,675024699,107127760,107127761,88313959,88313960);
+
+  // Trails that were closed for construction but might be open now
+  way(id:1088050765,1088050763,1088050764);
+
+  // Shortcut to big rock ridge trail
+  way(id:377033082);
+) -> .allways;
+
+(
+  .allways;
+  - way(id:266956319); // Exclude this way
+);
+out body;
+>;
+out skel qt;
+    </textarea>
+    <br/>
+    <button onclick="fetchTracks()">Fetch Tracks</button>
+    <div id="instruction" style="display:block; margin-top: 10px; font-weight: bold;">
+      Enter your Overpass query above and click "Fetch Tracks."
+    </div>
+    <div>
+      <label for="minLength">Tracks shorter than </label>
+      <input type="number" id="minLength" size="4" placeholder="Enter meters" value="2" />
+      <span>meters will be filtered out.</span>
+    </div>
+    <div id="progressBarContainer">
+      <div id="progressBar"></div>
+    </div>
+    <a id="downloadLink" style="display:none;" download="route.gpx">Download GPX</a>
+  </div>
+  <div id="map"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/leaflet/dist/leaflet.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf/turf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lodash@latest/lodash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-polylinedecorator/dist/leaflet.polylineDecorator.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/togpx/togpx.js"></script>
+  <script src="precomputed.js"></script>
+  <script>
+    const readyToRouteMessage = `Select starting point on the map.`;
+
+    // Display the precomputed route
+    const preMap = L.map('premap', {
+      scrollWheelZoom: false,
+    }).setView([51.505, -0.09], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+    }).addTo(preMap);
+
+    // Add GeoJSON to the map
+    preMap.fitBounds([[32.798136,-117.088140], [32.858431,-117.001279]]);
+    const precomputedPath = L.polyline(precomputedRoute, { color: 'blue', opacity: 0.8 }).addTo(preMap);
+
+    // Add directional arrows to the polyline
+    const decorator = L.polylineDecorator(precomputedPath, {
+      patterns: [
+        {
+          offset: 25,   // Adjust the starting point
+          repeat: 50,   // Spacing between arrows
+          symbol: L.Symbol.arrowHead({
+            pixelSize: 5,
+            polygon: false,  // We want non-filled arrowheads
+            pathOptions: {
+              stroke: true,
+              color: 'blue',
+              opacity: 0.6,
+            }
+          })
+        }
+      ]
+    }).addTo(preMap);
+
+    // Dynamic map
+    const map = L.map('map').setView([51.505, -0.09], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+    }).addTo(map);
+    map.fitBounds([[32.798136,-117.088140], [32.858431,-117.001279]]);
+
+    let trackLayerGroup = L.layerGroup().addTo(map);
+    let tracks = [];
+    let selectedPath = null;
+    let startPoint = null;
+    let selectedEndpoints = [];  // Store selected endpoints
+
+    // Load tracks when the page is refreshed
+    window.onload = () => {
+      loadTracksFromLocalStorage();
+      if (tracks.length > 0) {
+        showMessage(`Tracks loaded from local storage.<br/>${readyToRouteMessage}`)
+      }
+    }
+
+    // Function to handle track endpoint selection
+    function selectTrackEndpoint(latlng) {
+      selectedEndpoints.push([latlng.lat, latlng.lng]);
+
+      // If two points are selected, connect the tracks
+      if (selectedEndpoints.length === 2) {
+        connectTracks();  // Connect the two selected endpoints
+        showMessage(readyToRouteMessage);
+      } else {
+        showMessage('Select another track endpoint to connect.');
+      }
+    }
+
+    // Function to connect two endpoints
+    function connectTracks() {
+      if (selectedEndpoints.length === 2) {
+        renderTrack(selectedEndpoints);
+
+        // Add the new connection to the tracks array
+        tracks.push(selectedEndpoints);
+
+        // Save the updated tracks to local storage
+        saveTracksToLocalStorage();
+
+        // Clear the selected endpoints after connection
+        selectedEndpoints = [];
+      }
+    }
+
+    // Save tracks to localStorage
+    function saveTracksToLocalStorage() {
+      const savedTracks = JSON.stringify(tracks);
+      localStorage.setItem('savedTracks', savedTracks);
+      console.log('Tracks saved to local storage.');
+    }
+
+    // Load tracks from localStorage
+    function loadTracksFromLocalStorage() {
+      const savedTracks = localStorage.getItem('savedTracks');
+      if (savedTracks) {
+        const parsedTracks = JSON.parse(savedTracks);
+        parsedTracks.forEach(coordinates => {
+          renderTrack(coordinates);
+
+          // Add to the tracks array
+          tracks.push(coordinates);
+        });
+        console.log('Loaded tracks from local storage.');
+      } else {
+        console.log('No tracks found in local storage.');
+      }
+    }
+
+    function renderTrack(coordinates, optionsOverride) {
+      const options = {
+        circleMarker: {
+          color: 'blue',
+          radius: 3,
+        },
+        color: 'blue',
+        mouseOverColor: 'red',
+        ...optionsOverride
+      };
+      const polyline = L.polyline(coordinates, { color: options.color }).addTo(trackLayerGroup);
+
+      // Add markers for the start and end points
+      const startPoint = coordinates[0]; // First point
+      const endPoint = coordinates[coordinates.length - 1]; // Last point
+      const startMarker = L.circleMarker(startPoint, options.circleMarker).addTo(trackLayerGroup);
+      const endMarker = L.circleMarker(endPoint, options.circleMarker).addTo(trackLayerGroup);
+
+      // Add click event listeners to the start and end points
+      startMarker.on('click', function(e) {
+        selectTrackEndpoint(e.latlng);  // Select this endpoint
+      });
+
+      endMarker.on('click', function(e) {
+        selectTrackEndpoint(e.latlng);  // Select this endpoint
+      });
+
+      // Add event listeners for interaction
+      polyline.on('mouseover', function() {
+        this.setStyle({ color: options.mouseOverColor });
+      });
+
+      polyline.on('mouseout', function() {
+        this.setStyle({ color: options.color });
+      });
+
+      polyline.on('click', function(e) {
+        const popup = L.popup()
+          .setLatLng(e.latlng)
+          .setContent(`
+            <div style="text-align: center;">
+              <button id="delete-segment">Delete segment</button><br>
+              <button id="set-start">Route from here</button><br>
+            </div>
+          `)
+          .openOn(map);
+
+        document.getElementById('delete-segment').onclick = function() {
+          const index = tracks.indexOf(coordinates);
+          if (index > -1) {
+            trackLayerGroup.removeLayer(polyline);  // Remove polyline
+            startMarker.remove();  // Remove the markers too
+            endMarker.remove();
+            tracks.splice(index, 1);
+            saveTracksToLocalStorage();  // Save the updated tracks after removal
+          }
+          map.closePopup();
+        };
+
+        document.getElementById('set-start').onclick = function() {
+          // Handle set start point
+          setStartPoint(e.latlng);
+          map.closePopup();
+        };
+      });
+    }
+
+    function fetchTracks() {
+      const fetchButton = document.querySelector('button[onclick="fetchTracks()"]');
+
+      // Disable the button and update its text
+      fetchButton.disabled = true;
+      fetchButton.textContent = "Fetching...";
+
+      trackLayerGroup.clearLayers();
+      tracks = [];
+      startPoint = null;
+
+      const query = document.getElementById('overpassQuery').value;
+      const overpassUrl = 'https://overpass-api.de/api/interpreter';
+
+      fetch(overpassUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `data=${encodeURIComponent(query)}`
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (!data.elements) {
+          console.error('No elements found in the response.');
+          return;
+        }
+
+        const minLength = parseFloat(document.getElementById('minLength').value);
+        const allCoordinates = [];
+
+        let trackCount = 0, filteredTracks = 0;
+        data.elements.forEach(element => {
+          if (element.type === 'way' && element.nodes) {
+            const coordinates = [];
+
+            element.nodes.forEach(nodeId => {
+              const node = data.elements.find(el => el.id === nodeId && el.type === 'node');
+              if (node) {
+                const latLng = [node.lat, node.lon];
+                coordinates.push(latLng);
+                allCoordinates.push(latLng);
+              }
+            });
+
+            if (coordinates.length > 0) {
+              trackCount += 1;
+            }
+
+            if (trackLength(coordinates) >= minLength) {
+              renderTrack(coordinates);
+              tracks.push(coordinates);
+            } else {
+              filteredTracks += 1;
+            }
+          }
+        });
+
+        console.log(`Downloaded ${trackCount} tracks and filtered ${filteredTracks}.`);
+
+        // Recenter the map to fit all coordinates
+        if (allCoordinates.length) {
+          const bounds = L.latLngBounds(allCoordinates);
+          map.fitBounds(bounds);
+        }
+
+        // Save tracks to local storage
+        saveTracksToLocalStorage();
+
+        // Show instruction for the user
+        showMessage(readyToRouteMessage);
+      })
+      .catch(error => {
+        console.error('Error fetching tracks:', error);
+      })
+      .finally(() => {
+        // Re-enable the button and reset its text
+        fetchButton.disabled = false;
+        fetchButton.textContent = "Fetch Tracks";
+      });
+    }
+
+    function setStartPoint(latlng) {
+      if (startPoint) {
+        map.removeLayer(startPoint);
+      }
+      startPoint = L.marker(latlng).addTo(map);
+
+      // Hide the instruction once a starting point is set
+      showMessage('');
+
+      calculateRoute(latlng);
+    }
+
+    // Function to calculate distance between two points
+    const distanceBetween = (pointA, pointB) => turf.distance(turf.point(pointA), turf.point(pointB));
+
+    // Returns the length of the given track defined in coordinates in units of meters
+    function trackLength(coordinates) {
+      let cumulativeDistance = 0;
+
+      for (let i = 1; i < coordinates.length; i++) {
+        cumulativeDistance += distanceBetween(coordinates[i - 1], coordinates[i]);
+      }
+      return cumulativeDistance * 1000;
+    }
+
+    function connectPoints(graph, dists, firstPoint, lastPoint, distance) {
+      const firstPointKey = getPointKey(firstPoint);
+      const lastPointKey = getPointKey(lastPoint);
+
+      // Add an edge in the graph between the first point and the last point
+      if (!graph[firstPointKey]) {
+        graph[firstPointKey] = new Set();
+      }
+      if (!graph[lastPointKey]) {
+        graph[lastPointKey] = new Set();
+      }
+      graph[firstPointKey].add(lastPointKey);
+      graph[lastPointKey].add(firstPointKey);
+
+      // Update the distance map with the provided distance between the points
+      dists[`${firstPointKey}-${lastPointKey}`] = distance;
+      dists[`${lastPointKey}-${firstPointKey}`] = distance;
+    }
+
+    // Function to build the graph representation
+    function buildGraph(tracks) {
+      const graph = {};
+      const dists = {}; // To store distances between points
+
+      // Build the initial graph with all points and their distances
+      tracks.forEach(track => {
+        for (let i = 1; i < track.length; i++) {
+          const [p1, p2] = [track[i - 1], track[i]];
+          const distance = distanceBetween(p1, p2);
+
+          connectPoints(graph, dists, p1, p2, distance);
+        }
+      });
+
+      return [graph, dists];
+    }
+
+    // Optionally link tracks' endpoints.  We can invoke this function like so:
+    // tracks.forEach(track => {
+    //   const excludePoints = new Set(track.map(getPointKey));
+    //   maybeLinkToGraph(graph, dists, track[0], excludePoints);
+    //   maybeLinkToGraph(graph, dists, track[track.length - 1], excludePoints);
+    // })
+    function maybeLinkToGraph(graph, dists, point, exclude) {
+      const closestPoint = findNearestVertex(graph, point, exclude);
+      const distance = distanceBetween(point, getCoordinates(closestPoint));
+      if (distance < 0.05) {
+        connectPoints(graph, dists, point, closestPoint, distance)
+      }
+    }
+
+    function compressGraph(graph, distances, startVertex) {
+      const compressedGraph = {};
+      const compressedDistances = { ...distances };
+      const expandedPaths = {}; // To store the paths after compression
+
+      // Initialize compressed graph structure
+      for (const key in graph) {
+        compressedGraph[key] = new Set(graph[key]);
+      }
+
+      let changed = true;
+      while (changed) {
+        changed = false;
+
+        for (const vertex in compressedGraph) {
+          if (vertex !== startVertex && compressedGraph[vertex].size === 2) {
+            const [neighbor1, neighbor2] = Array.from(compressedGraph[vertex]);
+
+            // Check if both neighbors are degree-2 vertices or already compressed vertices
+            if (compressedGraph[neighbor1].size === 2 && compressedGraph[neighbor2].size === 2 &&
+              neighbor1 !== startVertex && neighbor2 !== startVertex
+            ) {
+              // Remove the vertex from the graph and add an edge between its neighbors
+              compressedGraph[neighbor1].delete(vertex);
+              compressedGraph[neighbor2].delete(vertex);
+              compressedGraph[neighbor1].add(neighbor2);
+              compressedGraph[neighbor2].add(neighbor1);
+
+              // Calculate the new distance by summing distances along the collapsed path
+              const newDistance = compressedDistances[`${neighbor1}-${vertex}`] + compressedDistances[`${vertex}-${neighbor2}`];
+              compressedDistances[`${neighbor1}-${neighbor2}`] = newDistance;
+              compressedDistances[`${neighbor2}-${neighbor1}`] = newDistance;
+
+              // Initialize the paths or merge previous paths if they exist
+              const path1 = expandedPaths[`${neighbor1}-${vertex}`] || [];
+              const path2 = expandedPaths[`${vertex}-${neighbor2}`] || [];
+
+              // Create the new expanded path between neighbor1 and neighbor2 (without duplicating the middle vertex)
+              expandedPaths[`${neighbor1}-${neighbor2}`] = [...path1, vertex, ...path2];
+              expandedPaths[`${neighbor2}-${neighbor1}`] = [...path2.reverse(), vertex, ...path1.reverse()];
+
+              // Remove the vertex from the graph
+              delete compressedGraph[vertex];
+
+              // Remove the vertex from the distances object
+              delete compressedDistances[`${neighbor1}-${vertex}`];
+              delete compressedDistances[`${neighbor2}-${vertex}`];
+              delete compressedDistances[`${vertex}-${neighbor1}`];
+              delete compressedDistances[`${vertex}-${neighbor2}`];
+
+              changed = true; // Continue processing
+            }
+          }
+        }
+      }
+
+      console.log('Original graph: ', Object.keys(graph).length, 'keys.');
+      console.log('Compressed: ', Object.keys(compressedGraph).length, 'keys.');
+      console.log('Expanded paths:', expandedPaths);
+      return [compressedGraph, compressedDistances, expandedPaths];
+    }
+
+    function uncompressRoute(compressedRoute, expandedPaths) {
+      let fullRoute = [compressedRoute[0]];
+
+      for (let i = 1; i < compressedRoute.length; i++) {
+        const start = compressedRoute[i - 1];
+        const end = compressedRoute[i];
+        const key = `${start}-${end}`;
+
+        if (expandedPaths[key]) {
+          fullRoute = fullRoute.concat(expandedPaths[key].map(getCoordinates));
+        }
+        fullRoute.push(end);
+      }
+
+      return fullRoute;
+    }
+
+    function calculateRoute(latlng) {
+      const lastPoint = [latlng.lat, latlng.lng];
+
+      // Build the graph from the tracks
+      let [graph, dists] = buildGraph(tracks);
+
+      // Find the nearest point in the graph to the starting point
+      const startVertex = findNearestVertex(graph, lastPoint);
+      if (!startVertex) {
+        return;
+      }
+
+      // Remove intermediate edges for faster route finding and make sure the
+      // start vertex does not get compressed out
+      let expandedPaths = [];
+      [graph, dists, expandedPaths] = compressGraph(graph, dists, startVertex);
+
+      showMessage('Calculating route...');
+      console.log('Calculating route from', startVertex);
+
+      const worker = new Worker('routeWorker.js');
+
+      worker.onmessage = function(event) {
+        if (event.data.message) {
+          console.log('From Worker:', event.data.message);
+        }
+        else if (event.data.matchedPath) {
+          if (event.data.matchedPath.length) {
+            const expandedPath = uncompressRoute(event.data.matchedPath.map(getCoordinates), expandedPaths);
+            const x = L.polyline(expandedPath, {color: 'red'}).addTo(map);
+            x.on('mouseover', function() {
+              this.setStyle({ color: 'orange' });
+              console.log('matchedPath:', event.data.matchedPath);
+              console.log('expanded path:', expandedPath);
+            });
+
+            x.on('mouseout', function() {
+              this.setStyle({ color: 'red' });
+            })
+          }
+        }
+        else if (event.data.progress) {
+          updateProgressBar(event.data.progress);
+        }
+        else if (event.data.result) {
+          const compressedRoute = event.data.result.map(getCoordinates);
+
+          // Expand the route to get the actual paths in the original graph
+          const route = uncompressRoute(compressedRoute, expandedPaths);
+          console.log(route);
+
+          // Display the route on the map
+          addRouteToMap(route);
+
+          // Optionally, create the GPX file from the route
+          createGPX(route);
+        }
+        if (event.data.error) {
+          console.error("Error:", event.data.error);
+        }
+      };
+
+      const graphObj = {};
+      for (const key in graph) {
+        graphObj[key] = Array.from(graph[key]);
+      }
+
+      worker.postMessage({ graph: graphObj, dists, startVertex });
+    }
+
+    function updateProgressBar(progress) {
+      const progressBar = document.getElementById("progressBar");
+      progressBar.style.width = progress + "%";
+    }
+
+    function findOddDegreeVertices(graph) {
+      const oddVertices = [];
+      for (const [vertex, neighbors] of Object.entries(graph)) {
+        if (neighbors.size % 2 === 1) {
+          oddVertices.push(vertex);
+        }
+      };
+      return oddVertices;
+    }
+
+    function createGPX(route) {
+      const geojson = {
+        type: 'FeatureCollection',
+        features: [{
+          type: 'Feature',
+          properties: {
+            title: 'All the trails',
+            description: 'Route covering every trail'
+          },
+          geometry: {
+            type: 'LineString',
+            coordinates: route.map(point => [point[1], point[0]]),
+          },
+        }],
+      };
+
+      const mileInKm = 1.60934;
+      let cumulativeDistance = 0;
+      let waypoints = [];
+
+      for (let i = 1; i < route.length; i++) {
+        const [lat1, lon1] = route[i - 1];
+        const [lat2, lon2] = route[i];
+
+        // Calculate distance between consecutive points
+        const distance = distanceBetween([lat1, lon1], [lat2, lon2]);
+        cumulativeDistance += distance;
+      }
+      const distancesInMiles = cumulativeDistance / mileInKm;
+      showMessage(`Route ready!  Total distance: ${cumulativeDistance.toFixed(2)} km (${distancesInMiles.toFixed(2)} miles)`);
+
+      const gpx = togpx(geojson, {
+        route: true,
+        featureTitle: (properties) => properties.title || 'Untitled',
+        featureDescription: (properties) => properties.description || '',
+        featureCoordTimes: () => [],  // No times for routes
+      });
+      const blob = new Blob([gpx], { type: 'application/gpx+xml' });
+      const url = URL.createObjectURL(blob);
+
+      const downloadLink = document.getElementById('downloadLink');
+      downloadLink.href = url;
+      downloadLink.style.display = 'inline';
+    }
+
+    function addRouteToMap(route) {
+      // Calculate cumulative distances along the route
+      const cumulativeDistances = [0]; // Start with zero for the first point
+
+      for (let i = 1; i < route.length; i++) {
+        const segmentDistance = distanceBetween(route[i - 1], route[i]);
+        const cumulativeDistance = cumulativeDistances[i - 1] + segmentDistance;
+        cumulativeDistances.push(cumulativeDistance);
+      }
+
+      // Filter and draw valid route points
+      if (selectedPath) map.removeLayer(selectedPath);
+      if (route.length > 1) {
+        selectedPath = L.polyline(route, { color: 'red', opacity: 0.5 }).addTo(map);
+
+        // Add directional arrows to the polyline
+        const decorator = L.polylineDecorator(selectedPath, {
+          patterns: [
+            {
+              offset: 25,   // Adjust the starting point
+              repeat: 50,   // Spacing between arrows
+              symbol: L.Symbol.arrowHead({
+                pixelSize: 8,
+                polygon: false,  // We want non-filled arrowheads
+                pathOptions: { stroke: true, color: '#f00' }
+              })
+            }
+          ]
+        }).addTo(map);
+      } else {
+        showMessage("No route found plot on the map.");
+        return;
+      }
+
+      // Create a tooltip for showing the cumulative distance
+      const distanceTooltip = L.tooltip({
+        permanent: false,
+        direction: 'top',
+      }).setContent("Distance: 0 m");
+
+      selectedPath.bindTooltip(distanceTooltip); // Attach the tooltip to the polyline
+
+      // Listen for mousemove events on the polyline
+      selectedPath.on('mousemove', function(event) {
+        const latlng = event.latlng;
+
+        // Find the nearest point on the route to the mouse position
+        let closestPoint = route[0];
+        let closestIndex = 0;
+        let closestDistance = distanceBetween([latlng.lat, latlng.lng], closestPoint);
+
+        for (let i = 1; i < route.length; i++) {
+          const dist = distanceBetween([latlng.lat, latlng.lng], route[i]);
+          if (dist < closestDistance) {
+            closestDistance = dist;
+            closestPoint = route[i];
+            closestIndex = i;
+          }
+        }
+
+        // Get the cumulative distance up to the closest point
+        const cumulativeDistance = cumulativeDistances[closestIndex];
+
+        // Update the tooltip content and position
+        distanceTooltip.setContent(`Distance: ${cumulativeDistance.toFixed(2)} km. Step ${closestIndex}.`);
+        distanceTooltip.setLatLng(latlng); // Move tooltip to mouse position
+      });
+    }
+
+    // Function to find the nearest point in the graph
+    function findNearestVertex(graph, latlng, exclude=new Set()) {
+      let nearestPoint = null;
+      let shortestDistance = Infinity;
+      for (const point in graph) {
+        if (exclude.has(point)) {
+          continue;
+        }
+        const [lat, lng] = getCoordinates(point)
+        const dist = turf.distance(turf.point(latlng), turf.point([lat, lng]));
+
+        if (dist < shortestDistance) {
+          shortestDistance = dist;
+          nearestPoint = point;
+        }
+      }
+
+      return nearestPoint;
+    }
+
+    function getCoordinates(pointStr) {
+      return pointStr.split(',').map(Number);
+    }
+
+    function getPointKey(point) {
+      return point.toString();
+    }
+
+    function showMessage(msgStr) {
+      const instructionDiv = document.getElementById('instruction');
+      instructionDiv.innerHTML = msgStr;
+    }
+  </script>
+
+</body>
+</html>

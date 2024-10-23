@@ -1,0 +1,223 @@
+/* Base styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 10px;
+    background-color: #f4f4f9;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+h1 {
+    font-size: 2rem;
+    line-height: 1.1;
+    color: #333;
+}
+
+#story {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Stats section responsive styling */
+.stats-container {
+    display: flex;                    /* Use flexbox for layout */
+    justify-content: center;          /* Center items horizontally */
+    margin-bottom: 20px;             /* Space below the stats */
+}
+
+.stat {
+    text-align: center;
+    margin: 0 15px;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #007BFF;
+}
+
+.stat-label {
+    font-size: 1.2rem;
+    color: #555;
+}
+
+.course-container {
+    display: flex;
+}
+
+.course-link {
+    font-size: 1rem;
+    color: #007BFF;
+    text-decoration: none;
+    padding: 5px 10px;
+    transition: color 0.3s;
+}
+
+.text {
+    font-family: "Georgia", "Times New Roman", Times, serif;
+    max-width: 600px;    /* For desktop */
+    margin: 20px;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    padding: 0 20px;
+}
+
+/* Map areas */
+#premap {
+    min-width: calc(100hw - 80px);
+    height: 20vh;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px; /* Add padding inside the map if needed */
+}
+
+/* Create a flexbox container for the controls and map */
+#container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 20px;
+    padding: 20px;
+    height: 100vh;
+    background-color: white; /* Optional: background color for visibility */
+    border-radius: 8px; /* Optional: rounded corners for the controls */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: shadow for aesthetics */
+    box-sizing: border-box;
+    @media screen and (orientation: portrait) {
+        height: 50vh;
+    }
+}
+
+#query-section {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+#controls-section {
+    grid-column: 2;
+    grid-row: 1;
+    padding-left: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+#overpassQuery {
+     width: 100%;
+     resize: vertical;
+ }
+
+#progressBarContainer {
+    margin: 10px 0;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    height: 5px;
+}
+
+#progressBar {
+    height: 100%;
+    width: 0;
+    background: #4CAF50;
+    transition: width 0.3s ease;
+}
+
+#map {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    min-height: 400px;
+    gap: 20px;
+    border: 1px solid #ccc;
+}
+
+.control-group {
+     margin: 10px 0;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 10px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+@media screen and (max-width: 600px) {
+    #container {
+        grid-template-columns: 1fr; /* Single column layout for all iPhones */
+        gap: 20px;
+        padding: 10px; /* Adjust padding for mobile */
+        height: auto;
+    }
+
+    #controls-section {
+        width: 100%;
+        grid-column: 1;
+        grid-row: 2;
+        padding-left: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    #map {
+        grid-column: 1;
+        grid-row: 3;
+    }
+
+    /* Make buttons more touch-friendly */
+    button {
+        padding: 12px 20px; /* Increase padding for touch devices */
+        font-size: 18px; /* Slightly larger font size */
+        margin: 5px 0; /* Space buttons vertically */
+    }
+
+    /* Resize text areas and other input controls */
+    #overpassQuery {
+        height: auto;
+        resize: vertical; /* Allow resizing */
+        font-size: 16px;
+    }
+
+    /* Reduce padding for controls */
+    #controls-section {
+        padding: 10px;
+    }
+
+    /* Ensure course links are mobile-friendly */
+    .course-link {
+        font-size: 1.1rem; /* Slightly reduce font size */
+        padding: 5px 8px;
+    }
+
+    /* Reduce gaps and margins in the control group */
+    .control-group {
+        margin: 5px 0;
+    }
+
+    /* Progress bar should stay proportionate */
+    #progressBarContainer {
+        margin: 5px 0;
+        height: 4px;
+    }
+
+    /* Adjust stats section for mobile */
+    .stats-container {
+        flex-direction: column; /* Stack stats vertically */
+        align-items: center; /* Center-align the items */
+    }
+
+    .text {
+        max-width: auto;
+        margin: 5px;
+        padding: 0px;
+    }
+}

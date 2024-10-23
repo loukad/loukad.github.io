@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,19 +28,19 @@
     <div class="text">
 <p>The ultra racing calendar for 2024 was a bit disappointing.  First, the race I had trained for and looked forward to all year&mdash;the <a href="https://www.ultratourmonterosa.com">Ultra Tour Monte Rosa</a>&mdash;was canceled with only a day's notice due to bad weather and devastating mud slides.  I then set my sights on the Kodiak 100, closer to home, but nature had other plans. The stubborn <a href="https://www.fire.ca.gov/incidents/2024/9/5/line-fire">Line Fire</a> burned through over 40,000 acres of the San Bernardino National Forest, forcing the race director to alter the course into an unrecognizable shadow of itself.  I decided to pass.</p>
 
-<p>Sometimes, disappointment breeds inspiration. As I climbed up Cowles Mountain one morning in October, an idea took root: What if, instead of racing someone else's course, I created my own challenge?  Something even closer to home.  What if I ran every single trail in Mission Trails Regional Park?</p>
+<p>Sometimes, disappointment breeds inspiration. As I climbed up Cowles Mountain one morning in October, an idea took root: What if, instead of racing someone else's course, I created my own challenge?  Something even closer to home, practically in my backyard.  What if I ran every single trail in <a href="https://mtrp.org/">Mission Trails Regional Park</a>?</p>
 
-<p>There is the former <a href="https://mtrp.org/5-peak-challenge/">Five Peaks Challenge</a> that the park sponsored between 2015 and 2020, encouraging hikers to summit Cowles, Pyles, Kwaay Paay, South Fortuna, and North Fortuna peaks in a single day.  Over 15,000 people have officially been recognized for doing so, going along various routes ranging in length between 18 and 20 miles.  But every trail?  That is a bigger undertaking.</a></p>
+<p>There is the former <a href="https://mtrp.org/5-peak-challenge/">Five Peaks Challenge</a> that the park sponsored between 2015 and 2020, encouraging hikers to summit Cowles, Pyles, Kwaay Paay, South Fortuna, and North Fortuna peaks in a single day.  As many as 15,000 people have officially been recognized for doing so, going along various routes ranging in length between 18 and 20 miles.  I myself have bagged all five countless times in one go.  But every trail?  That is a bigger undertaking.</a></p>
 
 <p>Creating a route that covers every trail in the park's network proved to be a puzzle that exceeded my patience for manual course creation in Garmin Connect or Gaia.  That's when I realized this was more than a running challenge—it was an opportunity to write some code.</p>
 
-<p>Starting with an Overpass query to fetch all trails and paths within the park boundary (constrained to official trails and paths only), I could transform this task into a classic computer science problem: the <a href="https://en.wikipedia.org/wiki/Eulerian_path">Chinese Postman Problem</a>. First described by Chinese mathematician Mei-Ko Kwan in 1962, this problem seeks to find the shortest possible route that covers every edge (in this case, trail) in a graph, potentially revisiting some sections when necessary.</p>
+<p>Starting with an Overpass query to fetch all trails and paths within the park boundary (constrained to official trails and paths only), I could transform this task into a classic computer science problem: the <a href="https://en.wikipedia.org/wiki/Chinese_postman_problem">Chinese Postman Problem</a>. First described by Chinese mathematician Meigu Guan in the 1960s, it seeks to find the shortest possible route that covers every edge (in this case, trail) in a graph, potentially revisiting some edges when necessary.</p>
 
-<p>It's a problem that resonates with anyone who's ever wondered about efficiency in navigation—whether you're a mail carrier plotting your route, a street sweeper covering an entire city, or a stir crazy runner during the pandemic, like Ricky Gates, who wanted to <a href="https://www.everysinglestreet.com/why">run every street</a> in their city (though in their case not all at once).</p>
+<p>It applies to anyone who cares about efficiency in complete navigation, like mail carriers, garbage collectors, or stir crazy runners during the pandemic, like Rickey Gates, who wanted to <a href="https://www.everysinglestreet.com/why">run every street</a> in their city (though in Rickey's case not all at once).</p>
 
-<p>I created this page because the approach is versatile and the code could be handy whether you're a runner wanting to create a course that covers every street in your neighborhood, a hiker wanting to explore every trail in a national park, or a cyclist trying to cover every bike path in your city. Try it out below!  The Overpass query is set to the one I created for Mission Trails, but you can write your own to suit your own adventure.</p>
+<p>I created this page because it might be useful to others.  The Overpass query is set to the one I created for Mission Trails, but you can write your own to suit your own adventure.</p>  To play around with the API and get help with the syntax (it is not terribly intuitive), visit <a href="https://overpass-turbo.eu/">overpass turbo</a>.
 
-<p>Also, check out the code for this page on <a href="https://github.com/loukad/loukad.github.io/tree/master/trail-routing">Github</a>.</p>
+<p>Also, check out the code for this page on <a href="https://github.com/loukad/loukad.github.io/tree/master/trail-routing">Github</a>.  To make the route finding more efficient, I added a graph compression step since the Mission Trails dataset has over 5,000 vertices and most edges are long chains that can be collapsed into a single edge with weight equal to the length of the full chain.  There is a corresponding expansion step to map the compressed route back onto the original.  And because route finding takes time, I am using a javascript worker to do the computation in the background to keep the UI responsive.</p>
     </div>
   </div>
   <div id="container">

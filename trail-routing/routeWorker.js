@@ -33,7 +33,7 @@ self.onmessage = function(event) {
   const startVertex = event.data.startVertex;
   const numVertices = Object.keys(graph).length;
   let iteration = 0;
-  
+
   // Create a deep copy of the graph to avoid modifying the original
   function cloneGraph(graph) {
     const newGraph = {};
@@ -84,7 +84,7 @@ self.onmessage = function(event) {
       }
     }
     return { dist, prev };
-  }  
+  }
 
   function dijkstraForAll(graph, dists) {
     const allPairsDist = {};
@@ -107,11 +107,11 @@ self.onmessage = function(event) {
   function reconstructPath(dest, prev, graph) {
     const path = [];
     let at = dest;
-    
+
     while (at !== null) {
       path.unshift(at);
       const nextAt = prev[at];
-      
+
       // Verify each step in the path exists in the graph
       if (nextAt !== null && !graph[at].includes(nextAt)) {
         self.postMessage({ error: `Invalid edge in path: ${at}-${nextAt}` });
@@ -156,6 +156,9 @@ self.onmessage = function(event) {
     }
   }
 
+  // Finds an Eulerian tour in an undirected graph using Hierholzer's algorithm.
+  // An Eulerian tour is a path that uses every edge in the graph exactly once and
+  // returns to the starting vertex.
   function findEulerianTour(graph, startVertex) {
     // Make a copy of the graph since we'll be modifying it
     const workingGraph = cloneGraph(graph);
@@ -247,7 +250,7 @@ self.onmessage = function(event) {
   function solveChinesePostman(graph, startVertex) {
     const workingGraph = cloneGraph(graph);
     self.postMessage({message: `CP vertex: ${startVertex}`});
-    
+
     const oddVertices = findOddDegreeVertices(workingGraph);
     self.postMessage({message: `Odd degree vertices: (${oddVertices.length}) ${oddVertices}`});
 
@@ -257,14 +260,14 @@ self.onmessage = function(event) {
 
     self.postMessage({message: 'Running minimum cost matching between odd vertices...'});
     const matchedPairs = minimumCostMatching(oddVertices, allPairsDist, workingGraph);
-    
+
     addMatchedEdges(workingGraph, matchedPairs, allPairsDist);
     return findEulerianTour(workingGraph, startVertex);
   }
 
   self.postMessage({message: 'Computing shortest paths...'});
   const allPairsDist = dijkstraForAll(graph, dists);
-  
+
   const result = solveChinesePostman(graph, startVertex);
   self.postMessage({ result });
 };

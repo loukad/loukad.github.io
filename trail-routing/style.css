@@ -104,9 +104,15 @@ h1 {
     justify-content: flex-end;
 }
 
+#minLength {
+    width: 6ch; /* 4 characters wide */
+    box-sizing: border-box; /* Ensure padding/border is included in the width */
+}
+
 #overpassQuery {
      width: 100%;
      resize: vertical;
+     box-sizing: border-box;
  }
 
 #progressBarContainer {
@@ -171,6 +177,7 @@ button:hover {
     #map {
         grid-column: 1;
         grid-row: 3;
+        min-height: 300px;
     }
 
     /* Make buttons more touch-friendly */

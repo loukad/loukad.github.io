@@ -6,54 +6,95 @@
   <title>All Tracks Route Planner</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet/dist/leaflet.min.css" />
   <style>
-      /* Create a flexbox container for the controls and map */
-      #container {
-          display: flex;
-          width: 100%;
-          gap: 20px; /* Space between the controls and map */
-      }
-
-      #map {
-          flex-grow: 1; /* Allow the map to grow and fill available space */
-          min-width: 400px; /* Set a minimum width for the map */
-          height: calc(100vh - 80px);
-          border-radius: 8px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-          padding: 20px; /* Add padding inside the map if needed */
-      }
-
       #story {
         gap: 20px;
       }
 
       #premap {
-          min-width: calc(100hw - 80px);
-          height: 400px;
-          border-radius: 8px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-          padding: 20px; /* Add padding inside the map if needed */
+        min-width: calc(100hw - 80px);
+        height: 400px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px; /* Add padding inside the map if needed */
       }
 
-      #controls {
-          display: flex;
-          flex-direction: column;
-          gap: 10px; /* Adds spacing between elements inside the controls */
-          padding: 20px; /* Add padding around the controls */
-          background-color: white; /* Optional: background color for visibility */
-          border-radius: 8px; /* Optional: rounded corners for the controls */
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: shadow for aesthetics */
+      /* Create a flexbox container for the controls and map */
+      #container {
+        display: flex;
+        width: 100%;
+        gap: 20px; /* Space between the controls and map */
       }
+
+      #container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto 1fr;
+        gap: 20px;
+        padding: 20px;
+        height: 100vh;
+        background-color: white; /* Optional: background color for visibility */
+        border-radius: 8px; /* Optional: rounded corners for the controls */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: shadow for aesthetics */
+        box-sizing: border-box;
+      }
+
+      #query-section {
+        grid-column: 1;
+        grid-row: 1;
+      }
+
+      #controls-section {
+        grid-column: 2;
+        grid-row: 1;
+        padding-left: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+
+      #map {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        height: 100%;
+        min-height: 400px;
+        gap: 20px;
+        border: 1px solid #ccc;
+      }
+
+      #overpassQuery {
+        width: 100%;
+        resize: vertical;
+      }
+
+      #progressBarContainer {
+        margin: 10px 0;
+        background: #f0f0f0;
+        border: 1px solid #ccc;
+        height: 5px;
+      }
+
+      #progressBar {
+        height: 100%;
+        width: 0;
+        background: #4CAF50;
+        transition: width 0.3s ease;
+      }
+
+      .control-group {
+        margin: 10px 0;
+      }
+
 
       body {
-          font-family: Arial, sans-serif;
-          margin: 20px;
-          background-color: #f4f4f9;
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f4f4f9;
       }
 
       .form-group {
-          display: flex;
-          align-items: center;
-          margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
       }
 
       .text {
@@ -82,47 +123,43 @@
 
       }
 
+      .query-label {
+        font-size: 16px;
+        margin-bottom: 8px;
+        display: block;
+      }
+
       label {
-          font-size: 16px;
-          margin-right: 10px;
+        font-size: 16px;
+        margin-right: 10px;
       }
 
       input[type="number"] {
-          padding: 5px;
-          font-size: 16px;
-          border-radius: 4px;
-          border: 1px solid #ccc;
-          width: 100px;
-          margin-right: 10px;
+        padding: 5px;
+        font-size: 16px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        width: 100px;
+        margin-right: 10px;
       }
 
       button {
-          background-color: #007bff;
-          color: white;
-          border: none;
-          padding: 8px 12px;
-          border-radius: 4px;
-          font-size: 16px;
-          cursor: pointer;
-          margin: 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+        margin: 10px;
       }
 
       button:hover {
-          background-color: #0056b3;
+        background-color: #0056b3;
       }
 
       span {
-          font-size: 16px;
-      }
-
-      #progressBarContainer {
-        width: 100%;
-        background-color: #f3f3f3;
-      }
-      #progressBar {
-        width: 0%;
-        height: 5px;
-        background-color: #4caf50;
+        font-size: 16px;
       }
 
       .stats-container {
@@ -188,7 +225,9 @@
 
 <p>Sometimes, disappointment breeds inspiration. As I climbed up Cowles Mountain one morning in October, an idea took root: What if, instead of racing someone else's course, I created my own challenge?  Something even closer to home.  What if I ran every single trail in Mission Trails Regional Park?</p>
 
-<p>The idea is simple. But creating a route that covers every trail in the park's network proved to be a puzzle that exceeded my patience for manual course creation in Garmin Connect or Gaia.  That's when I realized this was more than a running challenge—it was an opportunity to write some code.</p>
+<p>There is the former <a href="https://mtrp.org/5-peak-challenge/">Five Peaks Challenge</a> that the park sponsored between 2015 and 2020, encouraging hikers to summit Cowles, Pyles, Kwaay Paay, South Fortuna, and North Fortuna peaks in a single day.  Over 15,000 people have officially been recognized for doing so, going along various routes ranging in length between 18 and 20 miles.  But every trail?  That is a bigger undertaking.</a></p>
+
+<p>Creating a route that covers every trail in the park's network proved to be a puzzle that exceeded my patience for manual course creation in Garmin Connect or Gaia.  That's when I realized this was more than a running challenge—it was an opportunity to write some code.</p>
 
 <p>Starting with an Overpass query to fetch all trails and paths within the park boundary (constrained to official trails and paths only), I could transform this task into a classic computer science problem: the <a href="https://en.wikipedia.org/wiki/Eulerian_path">Chinese Postman Problem</a>. First described by Chinese mathematician Mei-Ko Kwan in 1962, this problem seeks to find the shortest possible route that covers every edge (in this case, trail) in a graph, potentially revisiting some sections when necessary.</p>
 
@@ -196,13 +235,14 @@
 
 <p>I created this page because the approach is versatile and the code could be handy whether you're a runner wanting to create a course that covers every street in your neighborhood, a hiker wanting to explore every trail in a national park, or a cyclist trying to cover every bike path in your city. Try it out below!  The Overpass query is set to the one I created for Mission Trails, but you can write your own to suit your own adventure.</p>
 
-<p>Also, check out the code on <a href="https://github.com/loukad/loukad.github.io/tree/master/trail-routing">Github</a>.</p>
+<p>Also, check out the code for this page on <a href="https://github.com/loukad/loukad.github.io/tree/master/trail-routing">Github</a>.</p>
     </div>
   </div>
   <div id="container">
-  <div id="controls">
-    Overpass query:
-    <textarea id="overpassQuery" placeholder="Enter Overpass API query for tracks" rows="10" style="width:500px;">
+    <div id="query-section">
+      <div class="control-group">
+        <label class="query-label">Overpass query:</label>
+        <textarea id="overpassQuery" placeholder="Enter Overpass API query for tracks" rows="10">
 [out:json];
 area[name="Mission Trails Regional Park"]->.park;
 (
@@ -235,23 +275,35 @@ area[name="Mission Trails Regional Park"]->.park;
 out body;
 >;
 out skel qt;
-    </textarea>
-    <br/>
-    <button onclick="fetchTracks()">Fetch Tracks</button>
-    <div id="instruction" style="display:block; margin-top: 10px; font-weight: bold;">
-      Enter your Overpass query above and click "Fetch Tracks."
+        </textarea>
+      </div>
     </div>
-    <div>
-      <label for="minLength">Tracks shorter than </label>
-      <input type="number" id="minLength" size="4" placeholder="Enter meters" value="2" />
-      <span>meters will be filtered out.</span>
+
+    <div id="controls-section">
+      <div class="control-group">
+        <button onclick="fetchTracks()">Fetch Tracks</button>
+      </div>
+
+      <div id="instruction" class="control-group" style="font-weight: bold;">
+        Enter your Overpass query and click "Fetch Tracks."
+      </div>
+
+      <div class="control-group">
+        <label for="minLength">Tracks shorter than </label>
+        <input type="number" id="minLength" size="4" placeholder="Enter meters" value="2" />
+        <span>meters will be filtered out.</span>
+      </div>
+
+      <div id="progressBarContainer">
+        <div id="progressBar"></div>
+      </div>
+
+      <div class="control-group">
+        <a id="downloadLink" style="display:none;" download="route.gpx">Download GPX</a>
+      </div>
     </div>
-    <div id="progressBarContainer">
-      <div id="progressBar"></div>
-    </div>
-    <a id="downloadLink" style="display:none;" download="route.gpx">Download GPX</a>
-  </div>
-  <div id="map"></div>
+
+    <div id="map"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/leaflet/dist/leaflet.min.js"></script>

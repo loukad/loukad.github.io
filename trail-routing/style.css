@@ -41,10 +41,16 @@ h1 {
 .stat-label {
     font-size: 1.2rem;
     color: #555;
+    padding: 5px;
 }
 
 .course-container {
     display: flex;
+    position: absolute;
+    top: 0;
+    right: 0;
+    align-items: center;
+    color: #555;
 }
 
 .course-link {

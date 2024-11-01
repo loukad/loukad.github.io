@@ -1,0 +1,79 @@
+/* Base styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 10px;
+    background-color: #f4f4f9;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+h1 {
+    font-size: 2rem;
+    line-height: 1.1;
+    color: #333;
+}
+
+p {
+    text-indent: 1em;
+}
+
+#story {
+    max-width: 1200px;
+}
+
+/* Stats section responsive styling */
+.stats-container {
+    display: flex;                    /* Use flexbox for layout */
+    justify-content: center;          /* Center items horizontally */
+    margin-bottom: 20px;             /* Space below the stats */
+}
+
+.stat {
+    text-align: center;
+    margin: 0 15px;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #007BFF;
+}
+
+.stat-label {
+    font-size: 1.2rem;
+    color: #555;
+    padding: 5px;
+}
+
+.text {
+    font-family: "Georgia", "Times New Roman", Times, serif;
+    max-width: 600px;    /* For desktop */
+    margin: 20px;
+    font-size: 1.2rem;
+    line-height: 1.6;
+}
+
+/* Map areas */
+#premap {
+    min-width: calc(100hw - 80px);
+    height: 20vh;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px; /* Add padding inside the map if needed */
+}
+
+pre {
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 1.0rem;
+    margin-top: -20px;
+    margin-left: 20px;
+}
+
+#text img {
+    border: 1px solid #2E2E2E;
+    margin: 0px;
+    overflow: clip;
+}

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Running all of Mission Trails Regional Park</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet/dist/leaflet.min.css" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/leaflet/dist/leaflet.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-polylinedecorator/dist/leaflet.polylineDecorator.min.js"></script>
+  <script src="precomputed.js"></script>
+</head>
+<body>
+  <div id="story">
+    <h1>Running all of Mission Trails Regional Park</h1>
+    <small><i>22 October 2024</i></small>
+    <div id="premap"></div>
+    <div class="stats-container">
+      <div class="stat">
+        <span class="stat-value">88</span>
+        <span class="stat-label">miles</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">19,844</span>
+        <span class="stat-label">ft of elevation gain</span>
+      </div>
+    </div>
+    <div class="text">
+<p>The ultra racing calendar for 2024 was a bit disappointing.  First, the race I had trained for and looked forward to all year&mdash;the <a href="https://www.ultratourmonterosa.com">Ultra Tour Monte Rosa</a>&mdash;was canceled with only a day's notice due to bad weather and devastating mud slides.  I then set my sights on the Kodiak 100, closer to home, but nature had other plans. The stubborn <a href="https://www.fire.ca.gov/incidents/2024/9/5/line-fire">Line Fire</a> burned through over 40,000 acres of the San Bernardino National Forest, forcing the race director to alter the course into an unrecognizable shadow of itself.  I decided to pass.</p>
+
+<p>Sometimes, disappointment breeds inspiration. As I climbed up Cowles Mountain one morning in October, an idea took root: What if, instead of racing someone else's course, I created my own challenge?  Something even closer to home, practically in my backyard.  What if I ran every single trail in <a href="https://mtrp.org/">Mission Trails Regional Park</a>?</p>
+
+<p>There is the former <a href="https://mtrp.org/5-peak-challenge/">Five Peaks Challenge</a> that the park sponsored between 2015 and 2020, encouraging hikers to summit Cowles, Pyles, Kwaay Paay, South Fortuna, and North Fortuna peaks in a single day.  As many as 15,000 people have officially been recognized for doing so, going along various routes ranging in length between 18 and 20 miles.  I myself have bagged all five countless times in one go.  But every trail?  That is a bigger undertaking.</a></p>
+
+<p>Creating a route that covers every trail in the park's network proved to be a puzzle that exceeded my patience for manual course creation in Garmin Connect or Gaia.  That's when I realized this was more than a running challenge—it was an opportunity to write some code.</p>
+
+<p>Starting with an <a href="https://overpass-turbo.eu/s/1Tk1">Overpass query</a> to fetch all trails and paths within the park boundary (constrained to official trails and paths only), I could transform this task into a classic computer science problem: the <a href="https://en.wikipedia.org/wiki/Chinese_postman_problem">Chinese Postman Problem</a>. First described by Chinese mathematician Meigu Guan in the 1960s, it seeks to find the shortest possible route that covers every edge (in this case, trail) in a graph, potentially revisiting some edges when necessary.  It applies to anyone who cares about efficiency in complete navigation, like mail carriers, garbage collectors, or stir crazy runners during the pandemic, like Rickey Gates, who wanted to <a href="https://www.everysinglestreet.com/why">run every street</a> in their city (though in Rickey's case not all at once).</p>
+
+<p>Since the park trails are segregated by Mission Gorge Road, I had to manually add the road segments connecting the two trail networks by including their corresponding way ids from OpenStreetMaps.  Some trails are also unofficially part of the park but not designated as such on OpenStreetMaps and had to be manually added.  On the flip side, some trails had to be excluded because I knew them to be closed (e.g., see <a href="https://www.openstreetmap.org/way/266956319#map=16/32.82613/-117.04786">Way: 266956319</a>) but lacked the <tt>access=no</tt> tag.
+
+<p>To make the route finding more efficient, I added a graph compression step since the Mission Trails dataset has over 5,000 vertices and most edges are long chains that can be collapsed into a single edge with weight equal to the length of the full chain.  There is a corresponding expansion step to map the compressed route back onto the original.  And because route finding takes time, I added a javascript worker to do the computation in the background to keep the UI responsive.</p>
+
+<p>Finally, running that many miles in a single push requires resources.  Since there were only about five times where I could fill up with water from a drinking fountain (sometimes as far apart as 30 miles), I needed outside help.  Thankfully, my wife agreed to become my mobile aid station, probably wondering how she went from &ldquo;in sickness and in health&rdquo; to &ldquo;in exhaustion and dehydration.&rdquo; I created a detailed crew table for her with mile markers and Google Maps links, because nothing says &ldquo;I love you&rdquo; quite like a spreadsheet of designated meeting points where she could find me in various stages of fatigue.</p>
+
+<pre><code>
+------------------------------------------------
+Waypoint Name          Mile Marker
+------------------------------------------------
+Crew access            15.85 (25.51 km)
+  └─ also at:          16.89 (27.18 km)
+  └─ also at:          24.33 (39.15 km)
+  └─ also at:          45.96 (73.96 km)
+  └─ also at:          58.52 (94.19 km)
+  └─ also at:          61.04 (98.23 km)
+  └─ also at:          63.51 (102.21 km)
+
+Water                  8.76 (14.10 km)
+  └─ also at:          38.83 (62.49 km)
+  └─ also at:          41.81 (67.29 km)
+  └─ also at:          67.60 (108.79 km)
+  └─ also at:          78.55 (126.41 km)
+
+🏠                     0.02 (0.03 km)
+  └─ also at:          72.22 (116.22 km)
+</code></pre>
+
+<p>With an optimal route created, in the early hours of Saturday morning on October 26, 2024 I stepped out the front door, kissed my wife goodbye, and set out in the dark.  The first couple of miles covered some paved paths in the Kumeyaay Lake Campground before taking me up the foothills of Kwaay Paay and back down to Junipero Serra Road.  The air was cold in the gorge, and I could see my breath as I jogged the easy miles towards the Visitor Center.  I knew the low temperatures would not last, though.  The Santa Ana winds would make this late October weekend a toasty one.</p>
+
+<p>I had enlisted the help of my friend, Jésus.  He was still recovering from having run the Kodiak 100 but agreed to accompany me for the next 20 miles.  We covered many paths on the west side neither of us knew existed as the sky started to brighten.</p>
+
+<img style="width:100%" src="images/dawn.jpg" />
+
+<p>We then went up the Climbers' Loop on the north side of Kwaay Paay along some of the steepest and most technical terrain in the park, which was new to Jésus.  Dropping back down into the gorge, we crossed the San Diego River where three years ago a tragic accident <a href="https://www.cbs8.com/article/news/local/maxs-parents-build-bridge-prevent-future-tragedies/509-f8e14bb0-7ffa-449a-a8e2-281b5ef82f3a">claimed</a> a young man's life during winter floods.   I could not resist lightening the mood by resurfacing a joke a friend had recently cracked about Jésus having no trouble with water crossings.  He had only heard that one about 2,024 times before.</p>
+
+<p>From there, we looped around and criss-crossed the top of the quarry before popping out into a neighborhood, where Allison surprised us with some much needed refreshments.  She had gone for a morning swim and was not due to meet us until later.  I had forgotten to refill with water at Mile 8, and the temperature was rising quickly, so seeing her was a godsend.</p>
+
+<p>Marching on, we covered a few circuitous trails.  Jésus often stopped at intersections where another trail met ours, and asked:</p>
+
+<p>&ldquo;What about this one?&rdquo;</p>
+<p>&ldquo;Not yet,&rdquo; I would reply after consulting my watch, feeling increasingly like a slave to the algorithm. </p>
+
+<p>Allison met us again at Mile 24, where Jésus had to say goodbye.  I tried to take in extra electrolytes because the next water access was not for another 14 miles.</p>
+
+<p>I passed someone going up the Suycott Valley Trail and exchanged a few words about the rising heat.  At the top of the climb, my watch turned me right back around, and I awkwardly tried to explain myself.  The hiker must have thought my brain was melting when I told him I am attempting to cover every trail in the park that day.  &ldquo;That's a long day,&rdquo; he said, clearly thinking I was making things up.</p>
+
+<p>Around Mile 30, while engrossed in my watch's map screen, trying to make sense of the current out-and-back segment, I tripped over my own shadow and scraped both knees.  I cursed myself for not paying more attention to the ground.  They stung, but I could not see  blood because the wounds were completely caked in dark brown dirt.</p>
+
+<p>From there, the route took me up South Fortuna, where I saw hikers struggling up the steep steps.  I tried to rein in my heart rate because there were still many miles until I could rehydrate. Then down the Fortuna Saddle Trail on the east side (affectionately known as the Widowmaker) I went, only to ascend again beneath the power lines, where I dutifully covered every little service road offshoot to the base of each tower.  Based on the tracks in the sand, I had been the only person on foot here in recent months. </p>
+
+<p>Around 2:30 in the afternoon, I finally made it to the Mission Dam fountain.  I probably drank a liter and a half and refilled my flasks not knowing where the watch would take me next.  A text came in from a friend following along on the Garmin Live Track that evaporated all mystery.  &ldquo;Looks like you're headed up Kwaay Paay next! Enjoy!&rdquo;</p>
+
+<p>Ugh, I thought.  That does not sound fun at this time of day.  I texted Allison to see if there was any chance she could meet me sooner with some electrolytes and headed up the trail, trying not to get my hopes up.</p>
+
+<p>Ten and a half hours in, and I had only just climbed three peaks.  The last two would come much later.  Fortunately, Allison heard my plea and brought me a cold Gatorade, which tasted heavenly.</p>
+
+<p>I carried on, the heat subsiding as the sun's angle became more oblique.  I thought about Robert who was to meet me at Mile 45 and how selfless and generous of him it was to offer to pace me for the most difficult stretch into the night, despite hardly knowing me.  The ultra running community is amazing at fostering a culture of support.  For being such an individual sport, it really brings people together.</p>
+
+<img style="width:100%" src="images/run.jpg" />
+
+<p>I managed to run into Allison one more time before picking up Robert.  Upon seeing me, Robert handed me a cold plum. &ldquo;Washed!&rdquo; He emphasized to my amusement.  I savored it as it cooled me down.  After some fluid top-offs, we ran off into the sunset.  It was around here I discovered that a trail from the course parallel to the equestrian staging road did not exist in real life, shortening the route by almost half a mile.  Several other times, short trail segments on the map were either closed or so overgrown that they were impassable, which reduced the overall route by about two miles.</p>
+
+<p>It was getting dark just as we ascended the Widowmaker to complete the remaining segments west of the Fortunas.  There were a few odd out-and-backs and awkward loop-the-loops before meeting Allison again on Portobelo Dr at Mile 57.  Standing around the trunk refueling, I started to feel cold.  The low valley areas in the dark attracted the cool air, and while it was a welcome change to the earlier heat, we could not linger.  I kissed Allison and told her I'd meet her as we pass near the house at Mile 72.</p>
+
+<p>&ldquo;The way I see it, my role as a pacer is to distract you from the discomforts,&rdquo; Robert said as he talked for hours about racing, geography, history, biology, anthropology, and everything in between.  He was right.  Between that and closely following the course on the watch, I had no time to think about fatigue or anything else, and the time flew by.</p>
+
+<p>As we checked off segments, Robert pointed to connecting trails and asked similar questions as Jésus, but this time I could confidently reply with &ldquo;That's done!&rdquo; and &ldquo;Did it!&rdquo;  We climbed over the saddle one final time, 65 miles in and headed back to the campground, where I had started 17 hours ago.  I washed my hands with soap in the restrooms, which felt like the height of luxury.  I have never run a 100 mile race with the option to do that.</p>
+
+<p>Back on our street, Allison brought us a final round of refreshments.  She was wearing her knitted octopus hat to combat the chilled air.</p>
+
+<p>&ldquo;You are a lucky man,&rdquo; Robert said.  I could not agree more as I handed him a donut bar from the goodie bag.</p>
+
+<p>This was it.  The final stretch south of the gorge.  My bread and butter trails up, down, and around Cowles and Pyles peaks.  We did not see anyone, even on the main Cowles Mountain Trail, which is normally heavily trafficked, night and day.  It was now the wee hours of Sunday morning.</p>
+
+<p>The air was clear, and we could see the twinkling lights of Downtown, La Jolla, and many East County suburbs.  They are all in bed, while we are up here working on my silly project.</p>
+
+<p>&rdquo;Final stretch!&rdquo; a message came from David on the Live Tracker.  I smiled.  I guess not everyone is in bed yet.
+
+<p>&ldquo;You are moving well,&rdquo; Robert said a couple of times on the downhills, which I appreciated because my toes were starting to feel bothered by all the dirt that had accumulated inside my shoes and socks.</p>
+
+<p>As Robert and I approached the trailhead, a headlamp bobbed towards us.  I glanced at my watch.  3:45 am.  While our day was finally ending, another adventurer's was just starting.  We did it.  We covered every single trail in Mission Trails.  Mission accomplished.</p>
+
+<p>The final stats were: <strong>85.46</strong> miles, <strong>17,028</strong> feet of elevation gain in <strong>22</strong>h&nbsp;<strong>40</strong>m&nbsp;<strong>53</strong>s.&nbsp;</p>
+<p>Interested in doing something similar in your own backyard?  Try out the <a href="https://github.com/loukad/loukad.github.io/tree/master/trail-routing">routing tool</a>.
+
+<p>You can view the route on <a href="https://connect.garmin.com/modern/course/315563049" class="course-link">Garmin Connect</a> or <a href="https://tracedetrail.fr/en/trace/274406" class="course-link">Trace de Trail</a>.
+
+    </div>
+  </div>
+  <script>
+    // Display the precomputed route
+    const preMap = L.map('premap', {
+      scrollWheelZoom: false,
+    }).setView([51.505, -0.09], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+    }).addTo(preMap);
+
+    // Add GeoJSON to the map
+    preMap.fitBounds([[32.798136,-117.088140], [32.858431,-117.001279]]);
+    const precomputedPath = L.polyline(precomputedRoute, { color: 'blue', opacity: 0.8 }).addTo(preMap);
+
+    // Add directional arrows to the polyline
+    const decorator = L.polylineDecorator(precomputedPath, {
+      patterns: [
+        {
+          offset: 25,   // Adjust the starting point
+          repeat: 50,   // Spacing between arrows
+          symbol: L.Symbol.arrowHead({
+            pixelSize: 5,
+            polygon: false,  // We want non-filled arrowheads
+            pathOptions: {
+              stroke: true,
+              color: 'blue',
+              opacity: 0.6,
+            }
+          })
+        }
+      ]
+    }).addTo(preMap);
+  </script>
+</body>
+</html>

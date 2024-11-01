@@ -20,63 +20,13 @@ h1 {
     padding: 0 20px;
 }
 
-/* Stats section responsive styling */
-.stats-container {
-    display: flex;                    /* Use flexbox for layout */
-    justify-content: center;          /* Center items horizontally */
-    margin-bottom: 20px;             /* Space below the stats */
-}
-
-.stat {
-    text-align: center;
-    margin: 0 15px;
-}
-
-.stat-value {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: #007BFF;
-}
-
-.stat-label {
-    font-size: 1.2rem;
-    color: #555;
-    padding: 5px;
-}
-
-.course-container {
-    display: flex;
-    position: absolute;
-    top: 0;
-    right: 0;
-    align-items: center;
-    color: #555;
-}
-
-.course-link {
-    font-size: 1rem;
-    color: #007BFF;
-    text-decoration: none;
-    padding: 5px 10px;
-    transition: color 0.3s;
-}
-
 .text {
     font-family: "Georgia", "Times New Roman", Times, serif;
     max-width: 600px;    /* For desktop */
     margin: 20px;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     line-height: 1.6;
     padding: 0 20px;
-}
-
-/* Map areas */
-#premap {
-    min-width: calc(100hw - 80px);
-    height: 20vh;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 20px; /* Add padding inside the map if needed */
 }
 
 /* Create a flexbox container for the controls and map */
